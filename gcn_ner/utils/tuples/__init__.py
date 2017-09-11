@@ -15,7 +15,7 @@ def get_entities_from_tuple(words, embeddings, ner, trans_prob):
 
 
 def erase_non_entities(all_words, all_entities, all_idx):
-    return [(w, e, i) for w, e, i in zip(all_words, all_entities, all_idx) if e]
+    return [(w, e, i) for w, e, i in zip(all_words, all_entities, all_idx) if e and w != ' ']
 
 
 def join_consecutive_tuples(tuples):
