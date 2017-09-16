@@ -2,30 +2,33 @@ NER that uses Graph Conv Nets
 =============================
 
 This is an implementation of a named entity recognizer that uses Graph
-Convolutional Networks.
+Convolutional Networks. The reference article is [Graph convolutional
+networks applied to NER](https://arxiv.org). This code has an F1 score
+of 79.7 ± 0.3.
+
 
 Installation
 ------------
 ```bash
-git clone https://github.com/fractalego/gcn_ner.git
+git clone https://github.com/contextscout/gcn_ner.git
 
 cd gcn_ner
 
 virtualenv --python=/usr/bin/python3 .env
 
-source ./env/bin/activate
+source .env/bin/activate
 
-pip3 install -r requirements.txt
+pip install -r requirements.txt
 
-python3 -m spacy download en
+python -m spacy download en
 
-python3 -m spacy download en_core_web_md
+python -m spacy download en_core_web_md
 ```
 Test NER
 --------
 Execute the file
 ```python
-python3 test_ner.py
+python test_ner.py
 ```
 
 
@@ -34,7 +37,7 @@ Train NER
 You will need to put your 'train.conll' into the 'data/' directory,
 then execute the file
 ```python
-python3 train.py
+python train.py
 ```
 
 
@@ -43,7 +46,7 @@ Test NER
 You will need to put your 'test.conll' into the 'data/' directory,
 then execute the file
 ```python
-python3 test_dataset.py
+python test_dataset.py
 ```
 
 

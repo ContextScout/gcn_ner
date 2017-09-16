@@ -18,7 +18,7 @@ def GCN_layer_fw(embedding_size, hidden_layer1_size, hidden, Atilde_fw):
     return X1_fw
 
 
-def GCN_layer_bw(embedding_size, hidden_layer1_size, hidden, Atilde_fw):
+def GCN_layer_bw(embedding_size, hidden_layer1_size, hidden, Atilde_bw):
     W0_bw = tf.Variable(tf.random_uniform([embedding_size, hidden_layer1_size], 0, 0.1), name='W0_bw')
     b0_bw = tf.Variable(tf.random_uniform([hidden_layer1_size], -0.1, 0.1), name='b0_bw')
     left_X1_projection_bw = lambda x: tf.matmul(x, W0_bw) + b0_bw
@@ -82,7 +82,7 @@ class GCNNerModel(object):
                                       self._hidden_layer1_size,
                                       self.hidden,
                                       self.Atilde_fw)
-            self.X1_bw = GCN_layer_fw(self._embedding_size,
+            self.X1_bw = GCN_layer_bw(self._embedding_size,
                                       self._hidden_layer1_size,
                                       self.hidden,
                                       self.Atilde_bw)
