@@ -31,6 +31,7 @@ def train_and_save(dataset, saving_dir, epochs=20, bucket_size=10):
 
 
     sentences = aux.get_all_sentences(dataset)
+    print('Computing the transition matrix')
     data, trans_prob = aux.get_data_from_sentences(sentences)
     pickle.dump(trans_prob, open("./data/trans_prob.pickle", "wb"))
     buckets = bin_data_into_buckets(data, bucket_size)

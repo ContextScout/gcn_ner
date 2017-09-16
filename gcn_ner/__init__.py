@@ -51,7 +51,7 @@ class GCNNer:
         :param dataset: the filename of a text in the CONLL format
         :return: None, the function prints precision, recall and chunck F1
         '''
-
+        
         sentences = utils.aux.get_all_sentences(dataset)
         data, _ = utils.aux.get_data_from_sentences(sentences)
         precision, recall, f1 = utils.testing.get_gcn_results(self._ner, data, self._trans_prob)
@@ -69,4 +69,5 @@ class GCNNer:
         :param bucket_size: The batch size of the training.
         :return: An instance of this class (GCNNer
         '''
+        print('Training the system according to the dataset ', dataset)
         return utils.training.train_and_save(dataset, saving_dir, epochs, bucket_size)

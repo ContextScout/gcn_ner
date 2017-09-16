@@ -4,7 +4,7 @@ NER that uses Graph Conv Nets
 This is an implementation of a named entity recognizer that uses Graph
 Convolutional Networks. The reference article is [Graph convolutional
 networks applied to NER](https://arxiv.org). This code has an F1 score
-of 79.7 ± 0.3.
+of 79.7 ± 0.3 on the Ontonotes 5 test dataset.
 
 
 Installation
