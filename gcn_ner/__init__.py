@@ -2,12 +2,15 @@ import numpy as np
 import pickle
 import random
 import sys
+import logging
 
 import gcn_ner.utils as utils
 from gcn_ner.ner_model import GCNNerModel
 
 
 class GCNNer:
+    _logger = logging.getLogger(__name__)
+
     def __init__(self, ner_filename, trans_prob_file):
         self._ner = GCNNerModel.load(ner_filename)
         self._trans_prob = pickle.load(open(trans_prob_file, "rb"))
@@ -19,10 +22,13 @@ class GCNNer:
         :param sentence: The input sentence
         :return: a list of triples of the form (<ENTITY>, <ENTITY_TYPE>, [<ENTITY_START_POS>, <ENTITY_END_POS>])
         '''
-
-        words, embeddings, idx = utils.aux.get_words_embeddings_from_sentence(sentence)
-        entities = utils.tuples.get_entities_from_tuple(words, embeddings, self._ner, self._trans_prob)
-        return utils.tuples.clean_tuples(words, entities, idx)
+        try:
+            words, embeddings, idx = utils.aux.get_words_embeddings_from_sentence(sentence)
+            entities = utils.tuples.get_entities_from_tuple(words, embeddings, self._ner, self._trans_prob)
+            return utils.tuples.clean_tuples(words, entities, idx)
+        except:
+            self._logger.warning('Cannot process the following sentence: ' + sentence)
+            return []
 
     def get_entity_tuples_from_text(self, text):
         '''
@@ -38,10 +44,13 @@ class GCNNer:
         all_entities = []
         all_idx = []
         for words, embeddings, idx in sentences:
-            entities = utils.tuples.get_entities_from_tuple(words, embeddings, self._ner, self._trans_prob)
-            all_words.extend(words)
-            all_entities.extend(entities)
-            all_idx.extend(idx)
+            try:
+                entities = utils.tuples.get_entities_from_tuple(words, embeddings, self._ner, self._trans_prob)
+                all_words.extend(words)
+                all_entities.extend(entities)
+                all_idx.extend(idx)
+            except:
+                self._logger.warning('Cannot process the following sentence: ' + ' '.join(words))
         return utils.tuples.clean_tuples(all_words, all_entities, all_idx)
 
     def test(self, dataset):
@@ -51,7 +60,7 @@ class GCNNer:
         :param dataset: the filename of a text in the CONLL format
         :return: None, the function prints precision, recall and chunck F1
         '''
-        
+
         sentences = utils.aux.get_all_sentences(dataset)
         data, _ = utils.aux.get_data_from_sentences(sentences)
         precision, recall, f1 = utils.testing.get_gcn_results(self._ner, data, self._trans_prob)
