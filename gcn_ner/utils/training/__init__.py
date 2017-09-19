@@ -54,7 +54,7 @@ def train_and_save(dataset, saving_dir, epochs=20, bucket_size=10):
                 if len(gcn_bucket) > 1:
                     gcn_model.train(gcn_bucket, trans_prob, 1)
             except:
-                pass
+               pass
         save_filename = saving_dir + '/ner-gcn-' + str(i) + '.tf'
         sys.stderr.write('Saving into ' + save_filename + '\n')
         gcn_model.save(save_filename)

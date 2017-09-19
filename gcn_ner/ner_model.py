@@ -37,7 +37,7 @@ class GCNNerModel(object):
     _vocab_size = 300
     _hidden_layer1_size = 160
     _hidden_layer2_size = 160
-    _output_size = 16
+    _output_size = 19
 
     def __init__(self):
 

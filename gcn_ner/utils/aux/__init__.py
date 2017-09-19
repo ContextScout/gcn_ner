@@ -9,8 +9,8 @@ tags = ["CC", "CD", "DT", "EX", "FW", "IN", "JJ", "JJR", "JJS", "LS", "MD", "NN"
         "PRP", "PRP$", "RB", "RBR", "RBS", "RP", "TO", "UH", "VB", "VBD", "VBG", "VBN", "VBP", "VBZ", "WDT", "WP",
         "WP$", "WRB"]
 
-classes = ["PERSON", "CARDINAL", "DATE", "TIME", "GPE", "ORG", "NOPR", "FAC", "LOC", "LAW", "MONEY", "QUANTITY",
-           "PERCENT", "EVENT", "WORK_OF_ART"]
+classes = ["CARDINAL", "DATE", "EVENT", "FAC", "GPE", "LANGUAGE", "LAW", "LOC",  "MONEY", "NORP", "ORDINAL",
+           "ORG", "PERCENT", "PERSON", "PRODUCT", "QUANTITY", "TIME", "WORK_OF_ART"]
 
 
 def clean_word(word, tag):
