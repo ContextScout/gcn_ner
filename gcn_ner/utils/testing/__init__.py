@@ -8,14 +8,14 @@ def get_gcn_results(gcn_model, data, trans_prob):
     total_positive = 0
     total_negative = 0
 
-    for words, sentence, classification in data:
+    for words, sentence, tag, classification in data:
         old_rhs = ''
         old_lhs = ''
         full_sentence = ' '.join(words)
         word_embeddings = sentence
         try:
             A_fw, A_bw, X = create_graph_from_sentence_and_word_vectors(full_sentence, word_embeddings)
-            prediction = gcn_model.predict_with_viterbi(A_fw, A_bw, X, trans_prob)
+            prediction = gcn_model.predict_with_viterbi(A_fw, A_bw, X, tag, trans_prob)
         except:
             continue
         open_rhs = False

@@ -35,6 +35,8 @@ class GCNNerModel(object):
     _internal_proj_size = 40
     _memory_dim = 160
     _vocab_size = 300
+    _tag_size = 36
+    _tag_embeddings_size = 15
     _hidden_layer1_size = 160
     _hidden_layer2_size = 160
     _output_size = 19
@@ -46,15 +48,28 @@ class GCNNerModel(object):
             self.sess = tf.Session(config=config)
 
             # Input variables
-            self.enc_inp = tf.placeholder(tf.float32, shape=(None, None, self._vocab_size))
-            self.enc_inp_bw = tf.placeholder(tf.float32, shape=(None, None, self._vocab_size))
+            self.enc_inp = tf.placeholder(tf.float32, shape=(None, None, self._vocab_size), name='enc_inp')
+            self.enc_inp_bw = tf.placeholder(tf.float32, shape=(None, None, self._vocab_size), name='enc_inp_bw')
+            self.tag_inp = tf.placeholder(tf.float32, shape=(None, None, self._tag_size), name='tag_inp')
+            self.tag_inp_bw = tf.placeholder(tf.float32, shape=(None, None, self._tag_size), name='tag_inp_bw')
+
+            # Tag embeddings
+            self.Wt = tf.Variable(tf.random_uniform([self._tag_size, self._tag_embeddings_size], 0, 0.1))
+            self.bt = tf.Variable(tf.random_uniform([self._tag_embeddings_size], -0.1, 0.1))
+            self.tag_projection = lambda x: tf.nn.relu(tf.matmul(x, self.Wt) + self.bt)
+            self.tag_emb_fw = tf.map_fn(self.tag_projection, self.tag_inp)
+            self.tag_emb_bw = tf.map_fn(self.tag_projection, self.tag_inp_bw)
+
+            self.word_tag_emb_fw = tf.concat(values=[self.enc_inp, self.tag_emb_fw], axis=2)
+            self.word_tag_emb_bw = tf.concat(values=[self.enc_inp_bw, self.tag_emb_bw], axis=2)
 
             # Dense layer before LSTM
-            self.Wi = tf.Variable(tf.random_uniform([self._vocab_size, self._internal_proj_size], 0, 0.1))
+            self.Wi = tf.Variable(tf.random_uniform([self._vocab_size + self._tag_embeddings_size,
+                                                     self._internal_proj_size], 0, 0.1))
             self.bi = tf.Variable(tf.random_uniform([self._internal_proj_size], -0.1, 0.1))
             self.internal_projection = lambda x: tf.nn.relu(tf.matmul(x, self.Wi) + self.bi)
-            self.enc_int = tf.map_fn(self.internal_projection, self.enc_inp)
-            self.enc_int_bw = tf.map_fn(self.internal_projection, self.enc_inp_bw)
+            self.enc_int = tf.map_fn(self.internal_projection, self.word_tag_emb_fw)
+            self.enc_int_bw = tf.map_fn(self.internal_projection, self.word_tag_emb_bw)
 
             # Bi-LSTM part
             self.enc_cell_fw = rnn.MultiRNNCell([rnn.GRUCell(self._memory_dim) for _ in range(self._stack_dimension)],
@@ -128,12 +143,15 @@ class GCNNerModel(object):
         identity = np.identity(num_nodes)
         return identity + A
 
-    def __train(self, A_fw, A_bw, X, y, trans_prob):
+    def __train(self, A_fw, A_bw, X, tag_logits, y, trans_prob):
         Atilde_fw = np.array([self._add_identity(item) for item in A_fw])
         Atilde_bw = np.array([self._add_identity(item) for item in A_bw])
 
         X = np.array(X)
         X2 = np.copy(X)
+
+        tag_logits = np.array(tag_logits)
+        tag_logits_bw = np.copy(tag_logits)
 
         seq_lengths = np.array([item.shape[0] for item in X])
         gold_tags = np.argmax(y, axis=2)
@@ -142,11 +160,19 @@ class GCNNerModel(object):
         X2 = np.transpose(X2, (1, 0, 2))
         X2 = X2[::-1, :, :]
 
+        tag_logits = np.transpose(tag_logits, (1, 0, 2))
+        tag_logits_bw = np.transpose(tag_logits_bw, (1, 0, 2))
+        tag_logits_bw = tag_logits_bw[::-1, :, :]
+
         y = np.array(y)
         y = np.transpose(y, (1, 0, 2))
 
-        feed_dict = {self.enc_inp: X}
+        feed_dict = {}
+        feed_dict.update({self.enc_inp: X})
         feed_dict.update({self.enc_inp_bw: X2})
+
+        feed_dict.update({self.tag_inp: tag_logits})
+        feed_dict.update({self.tag_inp_bw: tag_logits_bw})
 
         feed_dict.update({self.Atilde_fw: Atilde_fw})
         feed_dict.update({self.Atilde_bw: Atilde_bw})
@@ -165,10 +191,11 @@ class GCNNerModel(object):
                                    [data[i][1] for i in range(len(data))],
                                    [data[i][2] for i in range(len(data))],
                                    [data[i][3] for i in range(len(data))],
+                                   [data[i][4] for i in range(len(data))],
                                    trans_prob)
             sys.stdout.flush()
 
-    def __predict(self, A_fw, A_bw, X, trans_prob):
+    def __predict(self, A_fw, A_bw, X, tag_logits, trans_prob):
         Atilde_fw = np.array([self._add_identity(item) for item in A_fw])
         Atilde_bw = np.array([self._add_identity(item) for item in A_bw])
 
@@ -181,8 +208,16 @@ class GCNNerModel(object):
         X2 = np.transpose(X2, (1, 0, 2))
         X2 = X2[::-1, :, :]
 
+        tag_logits = np.array(tag_logits)
+        tag_logits_bw = np.copy(tag_logits)
+        tag_logits = np.transpose(tag_logits, (1, 0, 2))
+        tag_logits_bw = np.transpose(tag_logits_bw, (1, 0, 2))
+        tag_logits_bw = tag_logits_bw[::-1, :, :]
+
         feed_dict = {self.enc_inp: X}
         feed_dict.update({self.enc_inp_bw: X2})
+        feed_dict.update({self.tag_inp: tag_logits})
+        feed_dict.update({self.tag_inp_bw: tag_logits_bw})
         feed_dict.update({self.Atilde_fw: Atilde_fw})
         feed_dict.update({self.Atilde_bw: Atilde_bw})
 
@@ -192,14 +227,14 @@ class GCNNerModel(object):
         y_batch = self.sess.run(self.outputs, feed_dict)
         return y_batch
 
-    def predict_with_viterbi(self, A_fw, A_bw, X, trans_params):
-        outputs = np.array(self.__predict([A_fw], [A_bw], [X], trans_params))
+    def predict_with_viterbi(self, A_fw, A_bw, X, tag_logits, trans_params):
+        outputs = np.array(self.__predict([A_fw], [A_bw], [X], [tag_logits], trans_params))
         outputs = np.transpose(outputs, [1, 0, 2])
         outputs = outputs[0]
         viterbi_sequence, __score = tf.contrib.crf.viterbi_decode(outputs, trans_params)
         prediction = []
         for item in viterbi_sequence:
-            vector = [0.] * self._output_size
+            vector = [0.] * self.output_size
             vector[item] = 1.
             prediction.append(vector)
         return prediction

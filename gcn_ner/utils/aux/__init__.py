@@ -134,7 +134,8 @@ def create_graph_from_sentence_and_word_vectors(sentence, word_vectors):
     g2.add_edges(edges)
     A_bw = np.array(g2.get_adjacency().data)
 
-    return A_fw, A_bw, X
+    tag_logits = [get_tagging_vector(tag) for tag in tags]
+    return A_fw, A_bw, tag_logits, X
 
 
 def get_all_sentences(filename):
@@ -180,11 +181,14 @@ def get_data_from_sentences(sentences):
     for sentence in sentences:
         word_data = []
         class_data = []
+        tag_data = []
         words = []
         prior_entity = len(classes)
         for word, tag, entity in sentence:
             words.append(word)
             word_vector = get_clean_word_vector(word, tag)
+            tag_vector = get_tagging_vector(tag)
+            tag_data.append(tag_vector)
             vector = word_vector
             class_vector = get_class_vector(entity)
             entity_num = get_entity_num(entity)
@@ -193,6 +197,6 @@ def get_data_from_sentences(sentences):
             A[prior_entity, entity_num] += 1
             prior_entity = entity_num
             total_tokens += 1
-        all_data.append((words, word_data, class_data))
+        all_data.append((words, word_data, tag_data, class_data))
     A /= total_tokens
     return all_data, A
