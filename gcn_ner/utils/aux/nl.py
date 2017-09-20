@@ -7,6 +7,7 @@ class SpacyTagger:
     def __init__(self, sentence):
         self.sentence = sentence
 
+
 class SpacyParser:
 
     def __init__(self, tagger):
