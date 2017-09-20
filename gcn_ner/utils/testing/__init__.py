@@ -1,5 +1,11 @@
+import logging
+
+_logger = logging.getLogger(__name__)
+
+
 def get_gcn_results(gcn_model, data, trans_prob):
     from ..aux import create_graph_from_sentence_and_word_vectors
+    from ..aux import create_full_sentence
 
     true_positive = 0
     true_negative = 0
@@ -11,12 +17,13 @@ def get_gcn_results(gcn_model, data, trans_prob):
     for words, sentence, tag, classification in data:
         old_rhs = ''
         old_lhs = ''
-        full_sentence = ' '.join(words)
+        full_sentence = create_full_sentence(words)
         word_embeddings = sentence
         try:
-            A_fw, A_bw, X = create_graph_from_sentence_and_word_vectors(full_sentence, word_embeddings)
-            prediction = gcn_model.predict_with_viterbi(A_fw, A_bw, X, tag, trans_prob)
+            A_fw, A_bw, tags, X = create_graph_from_sentence_and_word_vectors(full_sentence, word_embeddings)
+            prediction = gcn_model.predict_with_viterbi(A_fw, A_bw, X, tags, trans_prob)
         except:
+            _logger.warning('Cannot process the following sentence: ' + full_sentence)
             continue
         open_rhs = False
         open_lhs = False

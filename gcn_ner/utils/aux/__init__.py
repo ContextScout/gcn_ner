@@ -1,5 +1,8 @@
 import spacy
+import re
 import numpy as np
+
+from spacy.tokenizer import Tokenizer
 
 parser = spacy.load('en_core_web_md')
 
@@ -9,14 +12,31 @@ tags = ["CC", "CD", "DT", "EX", "FW", "IN", "JJ", "JJR", "JJS", "LS", "MD", "NN"
         "PRP", "PRP$", "RB", "RBR", "RBS", "RP", "TO", "UH", "VB", "VBD", "VBG", "VBN", "VBP", "VBZ", "WDT", "WP",
         "WP$", "WRB"]
 
-classes = ["CARDINAL", "DATE", "EVENT", "FAC", "GPE", "LANGUAGE", "LAW", "LOC",  "MONEY", "NORP", "ORDINAL",
+classes = ["CARDINAL", "DATE", "EVENT", "FAC", "GPE", "LANGUAGE", "LAW", "LOC", "MONEY", "NORP", "ORDINAL",
            "ORG", "PERCENT", "PERSON", "PRODUCT", "QUANTITY", "TIME", "WORK_OF_ART"]
+
+word_substitutions = {'-LRB-': '(',
+                      '-RRB-': ')',
+                      '``': '"',
+                      "''": '"',
+                      }
+_partial_word = '%pw'
+
+
+def create_full_sentence(words):
+    import re
+
+    sentence = ' '.join(words)
+    sentence = re.sub(r' (\'[a-zA-Z])', r'\1', sentence)
+    return sentence
 
 
 def clean_word(word, tag):
     word = word
     if tag == '.':
         word = word.replace('/', '')
+    if word in word_substitutions:
+        word = word_substitutions[word]
     return word
 
 
@@ -143,7 +163,7 @@ def get_all_sentences(filename):
     sentences = []
     items = []
     old_entity = ''
-    for line in file.readlines():
+    for line in file.readlines()[:200000]:
         if line[0] == '#':
             continue
         elements = line.split()
@@ -185,7 +205,9 @@ def get_data_from_sentences(sentences):
         words = []
         prior_entity = len(classes)
         for word, tag, entity in sentence:
-            words.append(word)
+            if word == _partial_word:
+                continue
+            words.append(clean_word(word, tag))
             word_vector = get_clean_word_vector(word, tag)
             tag_vector = get_tagging_vector(tag)
             tag_data.append(tag_vector)

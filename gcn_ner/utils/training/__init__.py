@@ -28,6 +28,7 @@ def train_and_save(dataset, saving_dir, epochs=20, bucket_size=10):
     import gcn_ner.utils.aux as aux
 
     from gcn_ner.ner_model import GCNNerModel
+    from ..aux import  create_full_sentence
 
 
     sentences = aux.get_all_sentences(dataset)
@@ -45,7 +46,7 @@ def train_and_save(dataset, saving_dir, epochs=20, bucket_size=10):
                 for item in bucket:
                     words = item[0]
                     word_embeddings = item[1]
-                    sentence = ' '.join(words)
+                    sentence = create_full_sentence(words)
                     tags = item[2]
                     label = item[3]
                     label = [np.array(l, dtype=np.float32) for l in label]

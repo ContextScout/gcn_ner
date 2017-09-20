@@ -234,7 +234,7 @@ class GCNNerModel(object):
         viterbi_sequence, __score = tf.contrib.crf.viterbi_decode(outputs, trans_params)
         prediction = []
         for item in viterbi_sequence:
-            vector = [0.] * self.output_size
+            vector = [0.] * self._output_size
             vector[item] = 1.
             prediction.append(vector)
         return prediction
