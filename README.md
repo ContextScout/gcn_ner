@@ -41,8 +41,8 @@ python train.py
 ```
 
 
-Test NER
---------
+Test the dataset F1 score
+-------------------------
 You will need to put your 'test.conll' into the 'data/' directory,
 then execute the file
 ```python
