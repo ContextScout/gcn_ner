@@ -35,7 +35,7 @@ class GCNNerModel(object):
     _internal_proj_size = 40
     _memory_dim = 160
     _vocab_size = 300
-    _tag_size = 36
+    _tag_size = 43
     _tag_embeddings_size = 15
     _hidden_layer1_size = 160
     _hidden_layer2_size = 160

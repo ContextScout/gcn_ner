@@ -6,11 +6,12 @@ from spacy.tokenizer import Tokenizer
 
 parser = spacy.load('en_core_web_md')
 
+
 default_vector = parser('entity')[0].vector
 
 tags = ["CC", "CD", "DT", "EX", "FW", "IN", "JJ", "JJR", "JJS", "LS", "MD", "NN", "NNS", "NNP", "NNPS", "PDT", "POS",
         "PRP", "PRP$", "RB", "RBR", "RBS", "RP", "TO", "UH", "VB", "VBD", "VBG", "VBN", "VBP", "VBZ", "WDT", "WP",
-        "WP$", "WRB"]
+        "WP$", "WRB", '``', "''", '.', ',', ':', '-LRB-', '-RRB-']
 
 classes = ["CARDINAL", "DATE", "EVENT", "FAC", "GPE", "LANGUAGE", "LAW", "LOC", "MONEY", "NORP", "ORDINAL",
            "ORG", "PERCENT", "PERSON", "PRODUCT", "QUANTITY", "TIME", "WORK_OF_ART"]
@@ -28,6 +29,16 @@ def create_full_sentence(words):
 
     sentence = ' '.join(words)
     sentence = re.sub(r' (\'[a-zA-Z])', r'\1', sentence)
+    sentence = re.sub(r' (,.)', r'\1', sentence)
+    sentence = re.sub(r' " (.*) " ', r' "\1" ', sentence)
+    sentence = sentence.replace('do n\'t', 'don\'t')
+    sentence = sentence.replace('did n\'t', 'didn\'t')
+    sentence = sentence.replace('was n\'t', 'wasn\'t')
+    sentence = sentence.replace('were n\'t', 'weren\'t')
+    sentence = sentence.replace('is n\'t', 'isn\'t')
+    sentence = sentence.replace('are n\'t', 'aren\'t')
+    sentence = sentence.replace('\' em', '\'em')
+    sentence = sentence.replace('s \' ', 's \'s ')
     return sentence
 
 
@@ -37,6 +48,7 @@ def clean_word(word, tag):
         word = word.replace('/', '')
     if word in word_substitutions:
         word = word_substitutions[word]
+    word = re.sub(r'\+([a-zA-Z])', r'\1', word)
     return word
 
 
@@ -163,7 +175,7 @@ def get_all_sentences(filename):
     sentences = []
     items = []
     old_entity = ''
-    for line in file.readlines()[:200000]:
+    for line in file.readlines():
         if line[0] == '#':
             continue
         elements = line.split()

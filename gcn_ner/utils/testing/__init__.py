@@ -4,8 +4,15 @@ _logger = logging.getLogger(__name__)
 
 
 def get_gcn_results(gcn_model, data, trans_prob):
+    import numpy as np
+    import copy
+
     from ..aux import create_graph_from_sentence_and_word_vectors
     from ..aux import create_full_sentence
+    from ..aux import tags
+
+    TAGS = copy.deepcopy(tags)
+    TAGS.append('UNK')
 
     true_positive = 0
     true_negative = 0
@@ -14,17 +21,25 @@ def get_gcn_results(gcn_model, data, trans_prob):
     total_positive = 0
     total_negative = 0
 
+
+    total_sentences = 0
+    broken_sentences = 0
     for words, sentence, tag, classification in data:
         old_rhs = ''
         old_lhs = ''
         full_sentence = create_full_sentence(words)
         word_embeddings = sentence
+        total_sentences += 1
         try:
             A_fw, A_bw, tags, X = create_graph_from_sentence_and_word_vectors(full_sentence, word_embeddings)
             prediction = gcn_model.predict_with_viterbi(A_fw, A_bw, X, tags, trans_prob)
-        except:
-            _logger.warning('Cannot process the following sentence: ' + full_sentence)
+        except Exception as e:
+            #_logger.warning('Cannot process the following sentence: ' + full_sentence)
+            #print([TAGS[np.argmax(t)] for t in tags])
+            #print(words)
+            broken_sentences += 1
             continue
+
         open_rhs = False
         open_lhs = False
         has_entity = False
@@ -65,6 +80,8 @@ def get_gcn_results(gcn_model, data, trans_prob):
 
             old_rhs = rhs
             old_lhs = lhs
+
+    print(total_sentences, broken_sentences)
 
     precision = true_positive / (true_positive + false_positive)
     recall = true_positive / (true_positive + false_negative)
