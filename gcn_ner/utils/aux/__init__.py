@@ -20,6 +20,7 @@ word_substitutions = {'-LRB-': '(',
                       '-RRB-': ')',
                       '``': '"',
                       "''": '"',
+                      "--": '-',
                       }
 _partial_word = '%pw'
 
@@ -29,6 +30,7 @@ def create_full_sentence(words):
 
     sentence = ' '.join(words)
     sentence = re.sub(r' (\'[a-zA-Z])', r'\1', sentence)
+    sentence = re.sub(r' \'([0-9])', r' \1', sentence)
     sentence = re.sub(r' (,.)', r'\1', sentence)
     sentence = re.sub(r' " (.*) " ', r' "\1" ', sentence)
     sentence = sentence.replace('do n\'t', 'don\'t')
@@ -107,14 +109,12 @@ def get_entity_num(class_name):
 def _get_word_vectors_from_tokens(tokens):
     words = []
     vectors = []
-    tags = []
     idx = []
     for token in tokens:
         word = token.orth_
-        tag = token.pos_
+        tag = token.tag_
         words.append(word)
         vectors.append(get_clean_word_vector(word, tag))
-        tags.append(tag)
         idx.append([token.idx, token.idx + len(token.orth_)])
     return words, vectors, idx
 
@@ -128,6 +128,7 @@ def get_entity_name(prediction):
 
 
 def get_words_embeddings_from_sentence(sentence):
+    sentence = re.sub(r'([a-zA-Z]+)-([a-zA-Z]+)', r' \1_\2 ', sentence)
     tokens = parser(sentence)
     return _get_word_vectors_from_tokens(tokens)
 
@@ -145,6 +146,8 @@ def create_graph_from_sentence_and_word_vectors(sentence, word_vectors):
         raise TypeError("String must be an argument")
     from igraph import Graph
     from .nl import SpacyTagger as Tagger, SpacyParser as Parser
+
+    sentence = re.sub(r'([a-zA-Z]+)-([a-zA-Z]+)', r' \1_\2 ', sentence)
 
     tagger = Tagger(sentence)
     parser = Parser(tagger)

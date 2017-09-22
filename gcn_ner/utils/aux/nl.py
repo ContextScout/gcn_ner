@@ -2,7 +2,7 @@ from spacy.en import English
 
 parser = English()
 
-_invalid_words = [' ', '\'']
+_invalid_words = [' ']
 
 
 class SpacyTagger:

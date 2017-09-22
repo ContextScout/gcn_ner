@@ -41,7 +41,7 @@ class GCNNerModel(object):
     _hidden_layer2_size = 160
     _output_size = 19
 
-    def __init__(self):
+    def __init__(self, dropout=1.0):
 
         with tf.variable_scope(NAMESPACE):
             config = tf.ConfigProto(allow_soft_placement=True)
@@ -102,18 +102,20 @@ class GCNNerModel(object):
                                       self.hidden,
                                       self.Atilde_bw)
             self.X3 = tf.concat(values=[self.X1_fw, self.X1_bw], axis=2)
+            self.X3_dropout = tf.nn.dropout(self.X3, dropout)
 
             # Final feedforward layers
             self.Ws = tf.Variable(tf.random_uniform([self._hidden_layer2_size * 2, self._hidden_layer2_size], 0, 0.1),
                                   name='Ws')
             self.bs = tf.Variable(tf.random_uniform([self._hidden_layer2_size], -0.1, 0.1), name='bs')
             self.first_projection = lambda x: tf.nn.relu(tf.matmul(x, self.Ws) + self.bs)
-            self.last_hidden = tf.map_fn(self.first_projection, self.X3)
+            self.last_hidden = tf.map_fn(self.first_projection, self.X3_dropout)
+            self.last_hidden_dropout = tf.nn.dropout(self.last_hidden, dropout)
 
             self.Wf = tf.Variable(tf.random_uniform([self._hidden_layer2_size, self._output_size], 0, 0.1), name='Wf')
             self.bf = tf.Variable(tf.random_uniform([self._output_size], -0.1, 0.1), name='bf')
             self.final_projection = lambda x: tf.matmul(x, self.Wf) + self.bf
-            self.outputs = tf.map_fn(self.final_projection, self.last_hidden)
+            self.outputs = tf.map_fn(self.final_projection, self.last_hidden_dropout)
 
             # Loss function and training
             self.y_ = tf.placeholder(tf.float32, shape=(None, None, self._output_size), name='y_')
