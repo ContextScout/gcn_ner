@@ -51,6 +51,8 @@ def clean_word(word, tag):
     if word in word_substitutions:
         word = word_substitutions[word]
     word = re.sub(r'\+([a-zA-Z])', r'\1', word)
+    word = re.sub(r'\=([a-zA-Z])', r'\1', word)
+    word = re.sub(r'([a-zA-Z]+)_([a-zA-Z]+)', r' \1-\2 ', word)
     return word
 
 
@@ -113,7 +115,7 @@ def _get_word_vectors_from_tokens(tokens):
     for token in tokens:
         word = token.orth_
         tag = token.tag_
-        words.append(word)
+        words.append(clean_word(word, tag))
         vectors.append(get_clean_word_vector(word, tag))
         idx.append([token.idx, token.idx + len(token.orth_)])
     return words, vectors, idx

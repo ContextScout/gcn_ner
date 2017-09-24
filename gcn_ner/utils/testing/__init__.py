@@ -34,9 +34,9 @@ def get_gcn_results(gcn_model, data, trans_prob):
             A_fw, A_bw, tags, X = create_graph_from_sentence_and_word_vectors(full_sentence, word_embeddings)
             prediction = gcn_model.predict_with_viterbi(A_fw, A_bw, X, tags, trans_prob)
         except Exception as e:
-            _logger.warning('Cannot process the following sentence: ' + full_sentence)
-            print([TAGS[np.argmax(t)] for t in tags])
-            print(words)
+#            _logger.warning('Cannot process the following sentence: ' + full_sentence)
+#            print([TAGS[np.argmax(t)] for t in tags])
+#            print(words)
             broken_sentences += 1
             continue
 

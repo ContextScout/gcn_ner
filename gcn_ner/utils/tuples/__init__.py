@@ -6,7 +6,7 @@ def clean_text(text):
 def get_entities_from_tuple(words, embeddings, ner, trans_prob):
     import gcn_ner.utils as utils
 
-    sentence = ' '.join(words)
+    sentence = utils.aux.create_full_sentence(words)
     A_fw, A_bw, tags, X = utils.aux.create_graph_from_sentence_and_word_vectors(sentence, embeddings)
     predictions = ner.predict_with_viterbi(A_fw, A_bw, X, tags, trans_prob)
     entities = [utils.aux.get_entity_name(p) for p in predictions]

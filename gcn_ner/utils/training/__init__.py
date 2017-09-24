@@ -36,7 +36,7 @@ def train_and_save(dataset, saving_dir, epochs=20, bucket_size=10):
     data, trans_prob = aux.get_data_from_sentences(sentences)
     buckets = bin_data_into_buckets(data, bucket_size)
 
-    gcn_model = GCNNerModel(dropout=0.8)
+    gcn_model = GCNNerModel(dropout=0.7)
 
     for i in range(epochs):
         random_buckets = sorted(buckets, key=lambda x: random.random())
