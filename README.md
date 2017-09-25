@@ -9,6 +9,7 @@ This code uses GCNs and POS tagging to boost the entity recognition of a bidirec
 It scores ~81% on the Ontonotes 5 test dataset, which can be retrieved from 
 [the LDC website](https://catalog.ldc.upenn.edu/ldc2013t19).  
 
+The system currently uses the word vectors that come with spacy's "en_core_web_md" model.
 
 Installation
 ------------
@@ -33,15 +34,15 @@ if you want to install Tensorflow with GPU capabilities please use
 pip install -r requirements_gpu.txt
 ```
 
-Test NER
+Test NER on a text
 --------
 Execute the file
 ```python
-python test_ner.py
+python test_ner.py < data/random_text.txt
 ```
 
 
-Train NER
+Train NER from a dataset
 ---------
 You will need to put your 'train.conll' into the 'data/' directory,
 then execute the file
