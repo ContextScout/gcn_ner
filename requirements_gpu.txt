@@ -1,4 +1,4 @@
-tensorflow==1.1.0
+tensorflow-gpu==1.1.0
 gensim==0.13.3
 spacy==1.8.2
 numpy==1.12.1
