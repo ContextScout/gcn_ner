@@ -2,8 +2,9 @@ NER that uses Graph Conv Nets
 =============================
 
 This is an implementation of a named entity recognizer that uses Graph
-Convolutional Networks. The reference article is [Graph convolutional
-networks applied to NER](https://arxiv.org). 
+Convolutional Networks. The reference article is [Graph Convolutional
+Networks for Named Entity
+Recognition](https://arxiv.org/abs/1709.10053).
 
 This code uses GCNs and POS tagging to boost the entity recognition of a bidirectional LSTM. 
 It scores ~81% on the Ontonotes 5 test dataset, which can be retrieved from 
